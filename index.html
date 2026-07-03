@@ -155,7 +155,7 @@
                 <div class="output-grid">
                     <div class="data-row"><span class="data-label">Surface Gravity</span><span id="out-grav" class="data-value">9.81 m/s²</span></div>
                     <div class="data-row"><span class="data-label">Escape Velocity</span><span id="out-esc" class="data-value">11.2 km/s</span></div>
-                    <div class="data-row"><span class="data-label">Equilibrium Temp</span><span id="out-temp" class="data-value">-18.0 °C</span></div>
+                    <div class="data-row"><span class="data-label">Avg Surface Temp</span><span id="out-temp" class="data-value">15.0 °C</span></div>
                     <div class="data-row"><span class="data-label">Ocean Threshold</span><span id="out-sea" class="data-value">42% elev.</span></div>
                     <div class="data-row no-border"><span class="data-label">Lapse Rate</span><span id="out-lapse" class="data-value">9.76 K/km</span></div>
                 </div>
@@ -177,6 +177,10 @@
                         <span class="data-value" id="insp-alt">-</span>
                     </div>
                     <div class="data-row">
+                        <span class="data-label">Elev. Type</span>
+                        <span class="data-value" id="insp-elev-type">-</span>
+                    </div>
+                    <div class="data-row">
                         <span class="data-label">Temp</span>
                         <span class="data-value" id="insp-temp">-</span>
                     </div>
@@ -196,9 +200,13 @@
                         <span class="data-label">Tectonics</span>
                         <span class="data-value" id="insp-plate">-</span>
                     </div>
-                    <div class="data-row no-border biome-row">
+                    <div class="data-row biome-row">
                         <span class="data-label">Biome</span>
                         <span class="badge" id="insp-biome" style="background: #4ade80; color: #000;">Grassland</span>
+                    </div>
+                    <div class="data-row no-border">
+                        <span class="data-label">Biome Type</span>
+                        <span class="data-value" id="insp-biome-type">-</span>
                     </div>
                 </div>
             </div>

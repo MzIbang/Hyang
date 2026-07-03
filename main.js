@@ -408,16 +408,36 @@ function updateInspector(x, y) {
     
     let altMeter = 0;
     let altText = "";
+    let elevType = "";
     if (e >= sl) {
         const norm = Math.max(0, Math.min(1.0, (e - sl) / Math.max(0.01, 1.0 - sl)));
         altMeter = Math.round(Math.pow(norm, 2.2) * 8848);
         altText = `+${altMeter}m`;
+        if (norm < 0.15) {
+            elevType = "Lowland Valley";
+        } else if (norm < 0.45) {
+            elevType = "Hills & Plateaus";
+        } else if (norm < 0.75) {
+            elevType = "Highlands";
+        } else {
+            elevType = "Mountain Peak";
+        }
     } else {
         const depthNorm = Math.max(0, Math.min(1.0, (sl - e) / Math.max(0.01, sl)));
         altMeter = -Math.round(Math.pow(depthNorm, 1.8) * 10935);
-        altText = `${altMeter}m ${depthNorm > 0.6 ? '(Ocean Trench)' : depthNorm > 0.25 ? '(Abyssal Plain)' : '(Continental Shelf)'}`;
+        if (depthNorm > 0.6) {
+            elevType = "Ocean Trench";
+            altText = `${altMeter}m (Trench)`;
+        } else if (depthNorm > 0.25) {
+            elevType = "Abyssal Plain";
+            altText = `${altMeter}m (Abyssal)`;
+        } else {
+            elevType = "Continental Shelf";
+            altText = `${altMeter}m (Shelf)`;
+        }
     }
     document.getElementById('insp-alt').innerText = altText;
+    document.getElementById('insp-elev-type').innerText = elevType;
     
     const tempCelsius = Math.round((t - 0.25) * 65);
     document.getElementById('insp-temp').innerText = `${tempCelsius}°C`;
@@ -433,6 +453,47 @@ function updateInspector(x, y) {
     badge.innerText = biomeObj.name;
     badge.style.backgroundColor = biomeObj.color;
     badge.style.color = e < sl ? '#fff' : '#000';
+
+    let biomeType = "Terrestrial";
+    switch (biomeObj.name) {
+        case "Deep Ocean":
+        case "Ocean":
+            biomeType = "Marine";
+            break;
+        case "River":
+            biomeType = "Freshwater";
+            break;
+        case "Wetland":
+            biomeType = "Wetland";
+            break;
+        case "Beach":
+            biomeType = "Coastal";
+            break;
+        case "Grassland":
+        case "Savanna":
+            biomeType = "Grassland";
+            break;
+        case "Forest":
+        case "Jungle":
+        case "Taiga":
+            biomeType = "Forest";
+            break;
+        case "Tundra":
+            biomeType = "Tundra";
+            break;
+        case "Desert":
+            biomeType = "Arid / Desert";
+            break;
+        case "Mountain":
+            biomeType = "Alpine";
+            break;
+        case "Snowy Peak":
+            biomeType = "Glacial";
+            break;
+        default:
+            biomeType = "Terrestrial";
+    }
+    document.getElementById('insp-biome-type').innerText = biomeType;
 }
 
 async function generateWorld(seed) {

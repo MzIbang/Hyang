@@ -27,6 +27,7 @@ export class PlanetaryConfig {
         this.iron_ratio     = params.iron_ratio     ?? 0.32;  // core mass fraction
         this.age_gyr        = params.age_gyr        ?? 4.5;   // Gyr
         this.radioactive_heat = params.radioactive_heat ?? 1.0; // × Earth H₀
+        this.T_correction   = params.T_correction   ?? 0;     // Temperature adjustment offset
 
         // ── Star & Orbit ─────────────────────────────────────────────────
         this.star_luminosity    = params.star_luminosity    ?? 1.0;   // × L☉
@@ -67,6 +68,11 @@ export class PlanetaryConfig {
         this.T_eq = Math.pow(S0 * (1 - albedo) / (4 * SIGMA), 0.25); // K
         this.T_eq_C = this.T_eq - 273.15;                   // °C
 
+        // Greenhouse effect (Earth = +33°C, scales with atmospheric pressure)
+        // Thicker atmosphere holds more heat.
+        const greenhouse = 33 * Math.sqrt(Math.max(0, this.atm_pressure));
+        this.T_surf_C = this.T_eq_C + greenhouse + this.T_correction;
+
         // ── Dynamic Sea Level Threshold ──────────────────────────────────
         // Sea level threshold in the normalised [0,1] elevation space.
         // With more water the ocean basin is filled higher.
@@ -77,7 +83,7 @@ export class PlanetaryConfig {
 
         // Normalised equilibrium temperature for Wasm atmospheric solver.
         // Maps: –60 °C → 0,  +60 °C → 1  (Earth ~15°C → ~0.625)
-        this.eq_temp_norm = Math.max(0, Math.min(1, (this.T_eq_C + 60) / 120));
+        this.eq_temp_norm = Math.max(0, Math.min(1, (this.T_surf_C + 60) / 120));
 
         // Normalised lapse rate for Wasm (Earth → 1.0)
         // Used to scale altitude-cooling in temperature field.
@@ -119,7 +125,7 @@ export class PlanetaryConfig {
         return {
             gravity:   `${this.gravity.toFixed(2)} m/s²  (${this.gravity_g.toFixed(2)}g)`,
             escape:    `${(this.escape_vel / 1000).toFixed(1)} km/s`,
-            T_eq:      `${this.T_eq_C.toFixed(1)} °C`,
+            T_eq:      `${this.T_surf_C.toFixed(1)} °C`,
             sea_level: `${(this.sea_level * 100).toFixed(0)}% elev.`,
             pressure:  `${this.atm_pressure.toFixed(2)} atm (est.)`,
             lapse:     `${(this.lapse_rate_K_per_m * 1000).toFixed(2)} K/km`
