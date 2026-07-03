@@ -1,0 +1,19 @@
+{
+  "name": "hyang-physical-world-engine",
+  "version": "1.0.0",
+  "description": "Standalone high-performance physical world simulation (hydraulic erosion, tectonics, hydrology) powered by Zig and WebAssembly.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "procedural-generation",
+    "terrain",
+    "erosion",
+    "wasm",
+    "zig"
+  ],
+  "author": "",
+  "license": "MIT"
+}

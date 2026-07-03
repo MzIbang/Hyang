@@ -1,0 +1,19 @@
+# Build artifacts & compiled object files
+*.o
+*.obj
+*.stackdump
+*.exe
+zig-cache/
+zig-out/
+
+# Output distribution folder (generate locally or via CI)
+dist/
+
+# Dependencies & environment
+node_modules/
+package-lock.json
+.env
+
+# OS generated files
+Thumbs.db
+.DS_Store

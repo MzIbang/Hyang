@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYANG</title>
+    <meta name="description" content="Infinite continuous planetary simulation with physical Coriolis circulation, hydraulic erosion, and geological stratigraphy.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js for 3D Relief & Displacement utilities -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="logo-section">
+                <div class="logo-text">
+                    <h1>HYANG</h1>
+                    <span>Procedural World Engine</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <button class="btn-toggle-view" id="btn-planet-lab">
+                    <span>Planet Physics Lab</span>
+                </button>
+                <div class="input-group">
+                    <label for="seed-input">Seed:</label>
+                    <input type="text" id="seed-input" placeholder="Random Seed">
+                </div>
+                <button class="btn-generate" id="btn-generate">
+                    <span>Generate New World</span>
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Endless Navigation Bar (Top Left Widget) -->
+            <div id="endless-nav" class="endless-toolbar">
+                <div class="stream-status">
+                    <span id="infinite-coords" class="sector-badge">Pos: X: 0 km, Y: 0 km</span>
+                </div>
+                <div class="stream-actions">
+                    <span id="infinite-stats" class="stats-label">Sectors: 0 | Generating: 0</span>
+                    <button class="nav-btn" id="btn-recenter-stream">Recenter Origin</button>
+                </div>
+            </div>
+
+            <div id="canvas-container">
+                <canvas id="map-canvas"></canvas>
+                <canvas id="hud-canvas"></canvas>
+            </div>
+
+            <!-- Keep hidden globe container for JS references -->
+            <div id="globe-container" class="hidden"></div>
+
+            <!-- Floating Map Modes Toolbar -->
+            <div class="map-modes-toolbar">
+                <button class="mode-btn active" data-mode="elevation">Elevation</button>
+                <button class="mode-btn" data-mode="biomes">Biomes</button>
+                <button class="mode-btn" data-mode="stratigraphy">Geology</button>
+                <button class="mode-btn" data-mode="rivers">Hydrology</button>
+                <button class="mode-btn" data-mode="moisture">Humidity</button>
+                <button class="mode-btn" data-mode="temperature">Climate</button>
+                <button class="mode-btn" data-mode="tectonics">Tectonics</button>
+            </div>
+
+            <!-- Planet Lab Configuration Panel -->
+            <div class="inspector-panel hidden" id="planet-lab-panel">
+                <div class="panel-header">
+                    <h3>Planet Physics Lab</h3>
+                    <button id="close-planet-lab" class="close-btn">✕</button>
+                </div>
+                <div class="preset-section">
+                    <label>Archetype Preset:</label>
+                    <select id="preset-select">
+                        <option value="Earth-like">Earth-like (Water World)</option>
+                        <option value="Desert World">Desert World (Arid Dunes)</option>
+                        <option value="Ocean World">Ocean World (Deep Pelagic)</option>
+                        <option value="Super-Earth">Super-Earth (High Gravity)</option>
+                        <option value="Ice Giant">Ice Giant (Extreme Tilt)</option>
+                        <option value="Volcanic">Volcanic World (High Mantle Vigour)</option>
+                    </select>
+                </div>
+                <hr class="panel-divider">
+                <div class="data-grid sliders-grid">
+                    <div>
+                        <div class="slider-row">
+                            <span class="data-label">Water Fraction:</span>
+                            <span id="val-water" class="data-value">71%</span>
+                        </div>
+                        <input type="range" id="slider-water" min="0.05" max="0.98" step="0.01" value="0.71">
+                    </div>
+                    <div>
+                        <div class="slider-row">
+                            <span class="data-label">Mass / Gravity:</span>
+                            <span id="val-gravity" class="data-value">1.00 M⊕</span>
+                        </div>
+                        <input type="range" id="slider-mass" min="0.1" max="5.0" step="0.1" value="1.0">
+                    </div>
+                    <div>
+                        <div class="slider-row">
+                            <span class="data-label">Star Luminosity:</span>
+                            <span id="val-lumin" class="data-value">1.00 L☉</span>
+                        </div>
+                        <input type="range" id="slider-lumin" min="0.3" max="2.5" step="0.05" value="1.0">
+                    </div>
+                    <div>
+                        <div class="slider-row">
+                            <span class="data-label">Axial Tilt:</span>
+                            <span id="val-tilt" class="data-value">23.5°</span>
+                        </div>
+                        <input type="range" id="slider-tilt" min="0" max="85" step="0.5" value="23.5">
+                    </div>
+                    <div>
+                        <div class="slider-row">
+                            <span class="data-label">Radioactive Mantle Heat:</span>
+                            <span id="val-heat" class="data-value">1.00× H₀</span>
+                        </div>
+                        <input type="range" id="slider-heat" min="0.2" max="4.0" step="0.1" value="1.0">
+                    </div>
+                </div>
+                <hr class="panel-divider">
+                <h4 class="output-title">Physical System Output</h4>
+                <div class="output-grid">
+                    <div class="data-row"><span class="data-label">Surface Gravity</span><span id="out-grav" class="data-value">9.81 m/s²</span></div>
+                    <div class="data-row"><span class="data-label">Escape Velocity</span><span id="out-esc" class="data-value">11.2 km/s</span></div>
+                    <div class="data-row"><span class="data-label">Equilibrium Temp</span><span id="out-temp" class="data-value">-18.0 °C</span></div>
+                    <div class="data-row"><span class="data-label">Ocean Threshold</span><span id="out-sea" class="data-value">42% elev.</span></div>
+                    <div class="data-row no-border"><span class="data-label">Lapse Rate</span><span id="out-lapse" class="data-value">9.76 K/km</span></div>
+                </div>
+                <button id="btn-apply-planet" class="btn-generate w-full">
+                    Apply & Re-simulate World
+                </button>
+            </div>
+
+            <!-- Compact HUD Physical Inspector Panel -->
+            <div class="compact-inspector" id="inspector">
+                <h3>Physical Inspector</h3>
+                <div class="data-grid compact-grid">
+                    <div class="data-row">
+                        <span class="data-label">Coords</span>
+                        <span class="data-value" id="insp-coords">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Altitude</span>
+                        <span class="data-value" id="insp-alt">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Temp</span>
+                        <span class="data-value" id="insp-temp">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Humidity</span>
+                        <span class="data-value" id="insp-moisture">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">River Flow</span>
+                        <span class="data-value" id="insp-river">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Geology</span>
+                        <span class="data-value" id="insp-strat">-</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Tectonics</span>
+                        <span class="data-value" id="insp-plate">-</span>
+                    </div>
+                    <div class="data-row no-border biome-row">
+                        <span class="data-label">Biome</span>
+                        <span class="badge" id="insp-biome" style="background: #4ade80; color: #000;">Grassland</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Overlay -->
+            <div id="status-overlay">
+                <div class="spinner"></div>
+                <div class="status-text" id="status-text">Initializing Procedural World Generator...</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
